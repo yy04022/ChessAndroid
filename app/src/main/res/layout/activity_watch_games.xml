@@ -12,22 +12,22 @@
         android:orientation="vertical">
 
         <Button
-            android:id="@+id/backButton2"
-            android:layout_width="76dp"
+            android:id="@+id/backButton"
+            android:layout_width="73dp"
             android:layout_height="wrap_content"
             android:text="Back" />
 
-        <Switch
-            android:id="@+id/switch1"
-            android:layout_width="233dp"
-            android:layout_height="50dp" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/gameList"
+        <GridView
+            android:id="@+id/gridView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="419dp"
+            android:numColumns="8" />
 
-        </androidx.recyclerview.widget.RecyclerView>
+        <Button
+            android:id="@+id/nextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="NEXT" />
 
     </LinearLayout>
 

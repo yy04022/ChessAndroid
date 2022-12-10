@@ -7,20 +7,23 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
+import java.util.ArrayList;
+
 public class BoardAdapter extends BaseAdapter {
     Context context;
-    int[] piece;
+    //int[] piece;
+    ArrayList<Piece> piece;
 
     LayoutInflater inflater;
 
-    public BoardAdapter(Context context, int[] piece) {
+    public BoardAdapter(Context context, ArrayList<Piece> piece) {
         this.context = context;
         this.piece = piece;
     }
 
     @Override
     public int getCount() {
-        return piece.length;
+        return piece.size();
     }
 
     @Override
@@ -35,15 +38,15 @@ public class BoardAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        //if(inflater==null){
+        if(inflater==null){
             inflater = (LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
-        //}
-        //if(convertView==null){
+        }
+        if(convertView==null){
             convertView = inflater.inflate(R.layout.square_white,null);
-        //}
+        }
 
         ImageView imageView = convertView.findViewById(R.id.square_background_white);
-        imageView.setImageResource(piece[position]);
+        imageView.setImageResource(piece.get(position).getChessPiece());
 
         return convertView;
     }

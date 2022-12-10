@@ -12,6 +12,13 @@
         android:theme="@style/Theme.ChessAndroid"
         tools:targetApi="31">
         <activity
+            android:name=".WatchGames"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
             android:name=".RecordedGames"
             android:exported="false">
             <meta-data

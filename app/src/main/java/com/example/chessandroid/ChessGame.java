@@ -30,6 +30,7 @@ public class ChessGame {
     private boolean check = false;
     private boolean checkmate = false;
     private boolean winner = false;
+    private boolean kingStillInCheck = false;
     ArrayList<String> moveList = new ArrayList<String>();
 
     /**
@@ -227,6 +228,7 @@ public class ChessGame {
      */
     public void movePiece(boolean t, String name, int r1, int c1, int r2, int c2, String pS) {
         //System.out.println("TURNCOLOR: "+turnColor);
+        kingStillInCheck = false;
         if(t && board.getPiece(r1, c1).substring(0, 1).equals(turnColor) &&
                 !(board.getPiece(r2, c2).substring(0, 1).equals(turnColor)) &&
                 !board.getPiece(r2, c2).substring(1, 2).equals("K") &&
@@ -242,8 +244,8 @@ public class ChessGame {
                 }
             }
             if(check) {
-                for(int i=1; i<9; i++) {
-                    for(int j=0; j<8; j++) {
+                for(int i=0; i<9; i++) {
+                    for(int j=0; j<9; j++) {
                         boardCopy.setPiece(board.getPiece(i, j), i, j);
                     }
                 }
@@ -254,7 +256,9 @@ public class ChessGame {
                     for(int c=0; c<8; c++) {
                         if(boardCopy.getPiece(r, c).substring(0, 2).equals(turnColor+"K")) {
                             if(isInCheck(boardCopy,getOtherColor(),r,c)) {
-                                tryAgain();
+                                //tryAgain();
+                                kingStillInCheck = true;
+                                validMove = false;
                             }
                             else {
                                 check = false;
@@ -263,7 +267,7 @@ public class ChessGame {
                     }
                 }
             }
-            if(promotion) { // pawn promotion
+            if(promotion && !kingStillInCheck) { // pawn promotion
                 if(!pS.equals("x")) { // piece was given in input
                     board.setPiece(turnColor+pS, r2, c2);
                     board.setPiece("  ", r1, c1);
@@ -279,7 +283,7 @@ public class ChessGame {
                     draw2 = true;
                 }
             }
-            else if(castlingL) {
+            else if(castlingL && !kingStillInCheck) {
                 board.setPiece(turnColor+"R", r1, c1-1);
                 board.setPiece(turnColor+"K", r1, c1-2);
                 board.setPiece("  ", r1, c1);
@@ -291,7 +295,7 @@ public class ChessGame {
                     draw2 = true;
                 }
             }
-            else if(castlingR) {
+            else if(castlingR && !kingStillInCheck) {
                 board.setPiece(turnColor+"R", r1, c1+1);
                 board.setPiece(turnColor+"K", r1, c1+2);
                 board.setPiece("  ", r1, c1);
@@ -303,7 +307,7 @@ public class ChessGame {
                     draw2 = true;
                 }
             }
-            else { // every other piece or no pawn promotion
+            else if(!kingStillInCheck){ // every other piece or no pawn promotion
                 board.setPiece(name, r2, c2);
                 board.setPiece("  ", r1, c1);
                 kingCheck(getOtherColor(), turnColor); // checking if other king is in check
@@ -317,6 +321,7 @@ public class ChessGame {
                 turnColor = getOtherColor();
                 validMove = true;
             }
+            kingStillInCheck = false;
             System.out.println();
         }
         else {
@@ -337,11 +342,11 @@ public class ChessGame {
      */
     public boolean pawn(int r1, int c1, int r2, int c2) {
         if(turnColor.equals("w")) {
-            if((r1==2 && r2>r1 && r2-r1==2 && c1==c2 && !isPiece(3,c1) && !isPiece(4,c1))) { // two moves up
+            if((r1==2 && r2>r1 && r2-r1==2 && c1==c2 && !isPiece(3,c1, board) && !isPiece(4,c1,board))) { // two moves up
                 return true;
             }
             if(r2<=8) {
-                if(!isPiece(r2,c2) && r2>r1 && r2-r1==1 && c1==c2) { // one move up
+                if(!isPiece(r2,c2,board) && r2>r1 && r2-r1==1 && c1==c2) { // one move up
                     if(r2==8) {
                         promotion = true;
                     }
@@ -366,11 +371,11 @@ public class ChessGame {
             }
         }
         else {
-            if((r1==7 && r1>r2 && r1-r2==2 && c1==c2 && !isPiece(6,c1) && !isPiece(5,c1))) { // two moves down
+            if((r1==7 && r1>r2 && r1-r2==2 && c1==c2 && !isPiece(6,c1,board) && !isPiece(5,c1,board))) { // two moves down
                 return true;
             }
             if(r2>=1) {
-                if(!isPiece(r2,c2) && r1>r2 && r1-r2==1 && c1==c2) { // one move down
+                if(!isPiece(r2,c2,board) && r1>r2 && r1-r2==1 && c1==c2) { // one move down
                     if(r2==1) {
                         promotion = true;
                     }
@@ -408,14 +413,14 @@ public class ChessGame {
         if(r1==r2) {
             if(c1 < c2) { // move right
                 for(int c=c1+1; c<c2; c++) {
-                    if(isPiece(r1,c)) {
+                    if(isPiece(r1,c,board)) {
                         return false;
                     }
                 }
             }
             if(c1 > c2) { // move left
                 for(int c=c1-1; c>c2; c--) {
-                    if(isPiece(r1,c)) {
+                    if(isPiece(r1,c,board)) {
                         return false;
                     }
                 }
@@ -441,14 +446,14 @@ public class ChessGame {
         if(c1==c2) {
             if(r1<r2) {	// move up
                 for(int r=r1+1; r<r2; r++) {
-                    if(isPiece(r,c1)) {
+                    if(isPiece(r,c1,board)) {
                         return false;
                     }
                 }
             }
             if(r1>r2) { // move down
                 for(int r=r1-1; r>r2; r--) {
-                    if(isPiece(r,c1)) {
+                    if(isPiece(r,c1,board)) {
                         return false;
                     }
                 }
@@ -499,7 +504,7 @@ public class ChessGame {
     public boolean bishop(int r1, int c1, int r2, int c2) {
         if(r1<r2 && c2<c1 && (r2-r1 == c1-c2)) { // move up left
             for(int i=1; i<r2-r1; i++) {
-                if(isPiece(r1+1,c1-1)) {
+                if(isPiece(r1+1,c1-1, board)) {
                     return false;
                 }
             }
@@ -507,7 +512,7 @@ public class ChessGame {
         }
         if(r1<r2 && c1<c2 && (r2-r1 == c2-c1)) { // move up right
             for(int i=1; i<r2-r1; i++) {
-                if(isPiece(r1+1,c1+1)) {
+                if(isPiece(r1+1,c1+1, board)) {
                     return false;
                 }
             }
@@ -515,7 +520,7 @@ public class ChessGame {
         }
         if(r2<r1 && c2<c1 && (r1-r2 == c1-c2)) { // move down left
             for(int i=1; i<r1-r2; i++) {
-                if(isPiece(r1-1,c1-1)) {
+                if(isPiece(r1-1,c1-1, board)) {
                     return false;
                 }
             }
@@ -523,7 +528,7 @@ public class ChessGame {
         }
         if(r2<r1 && c1<c2 && (r1-r2 == c2-c1)) { // move down right
             for(int i=1; i<r1-r2; i++) {
-                if(isPiece(r1-1,c1+1)) {
+                if(isPiece(r1-1,c1+1, board)) {
                     return false;
                 }
             }
@@ -580,7 +585,7 @@ public class ChessGame {
         }
         else if(turnColor.equals("w")) { //white castling
             if(c1-c2==2 && r1==r2 && !castlingDone_WL) { // castling left
-                if(isPiece(1,1) || isPiece(1,2) || isPiece(1,3)) {
+                if(isPiece(1,1, board) || isPiece(1,2, board) || isPiece(1,3, board)) {
                     return false;
                 }
                 else if(board.getPiece(1, 0).substring(0, 2).equals(turnColor+"R")) {
@@ -591,7 +596,7 @@ public class ChessGame {
                 }
             }
             else if(c2-c1==2 && r1==r2 && !castlingDone_WR){ // castling right
-                if(isPiece(1,5) || isPiece(1,6)) {
+                if(isPiece(1,5, board) || isPiece(1,6, board)) {
                     return false;
                 }
                 else if(board.getPiece(1, 7).substring(0, 2).equals(turnColor+"R")) {
@@ -604,7 +609,7 @@ public class ChessGame {
         }
         else if(turnColor.equals("b")) { // black castling
             if(c1-c2==2 && r1==r2 && !castlingDone_BL) { // castling left
-                if(isPiece(8,1) || isPiece(8,2) || isPiece(8,3)) {
+                if(isPiece(8,1, board) || isPiece(8,2, board) || isPiece(8,3, board)) {
                     return false;
                 }
                 else if(board.getPiece(8, 0).substring(0, 2).equals(turnColor+"R")) {
@@ -615,7 +620,7 @@ public class ChessGame {
                 }
             }
             else if(c2-c1==2 && r1==r2 && !castlingDone_BR){ // castling right
-                if(isPiece(8,5) || isPiece(8,6)) {
+                if(isPiece(8,5, board) || isPiece(8,6, board)) {
                     return false;
                 }
                 else if(board.getPiece(8, 7).substring(0, 2).equals(turnColor+"R")) {
@@ -774,7 +779,7 @@ public class ChessGame {
                         b.getPiece(i, c).substring(0, 2).equals(color+"Q")) {
                     return true;
                 }
-                else if(isPiece(i,c)) {
+                else if(isPiece(i,c, b)) {
                     break;
                 }
             }
@@ -785,7 +790,7 @@ public class ChessGame {
                         b.getPiece(i, c).substring(0, 2).equals(color+"Q")) {
                     return true;
                 }
-                else if(isPiece(i,c)) {
+                else if(isPiece(i,c, b)) {
                     break;
                 }
             }
@@ -796,7 +801,7 @@ public class ChessGame {
                         b.getPiece(r, i).substring(0, 2).equals(color+"Q")) {
                     return true;
                 }
-                else if(isPiece(r,i)) {
+                else if(isPiece(r,i,b)) {
                     break;
                 }
             }
@@ -807,7 +812,7 @@ public class ChessGame {
                         b.getPiece(r, i).substring(0, 2).equals(color+"Q")) {
                     return true;
                 }
-                else if(isPiece(r,i)) {
+                else if(isPiece(r,i,b)) {
                     break;
                 }
             }
@@ -819,7 +824,7 @@ public class ChessGame {
                         b.getPiece(r+i, c-i).substring(0, 2).equals(color+"Q")) {
                     return true;
                 }
-                else if(isPiece(r+1,c-1)) {
+                else if(isPiece(r+1,c-1, b)) {
                     break;
                 }
             }
@@ -830,7 +835,7 @@ public class ChessGame {
                         b.getPiece(r+i, c+i).substring(0, 2).equals(color+"Q")) {
                     return true;
                 }
-                else if(isPiece(r+1,c+1)) {
+                else if(isPiece(r+1,c+1, b)) {
                     break;
                 }
             }
@@ -841,7 +846,7 @@ public class ChessGame {
                         b.getPiece(r-i, c-i).substring(0, 2).equals(color+"Q")) {
                     return true;
                 }
-                else if(isPiece(r-1,c-1)) {
+                else if(isPiece(r-1,c-1, b)) {
                     break;
                 }
             }
@@ -852,7 +857,7 @@ public class ChessGame {
                         b.getPiece(r-i, c+i).substring(0, 2).equals(color+"Q")) {
                     return true;
                 }
-                else if(isPiece(r-1,c+1)) {
+                else if(isPiece(r-1,c+1, b)) {
                     break;
                 }
             }
@@ -933,8 +938,8 @@ public class ChessGame {
      * @param c col of selected cell
      * @return true if piece is found, false if not
      */
-    public boolean isPiece(int r, int c) {
-        if((board.getPiece(r, c)!= "  ") && (board.getPiece(r, c)!="##")) {
+    public boolean isPiece(int r, int c, Board b) {
+        if((b.getPiece(r, c)!= "  ") && (b.getPiece(r, c)!="##")) {
             return true;
         }
         return false;
@@ -957,6 +962,9 @@ public class ChessGame {
      * prints all moves made
      */
     public void printMoveList() {
+        /*
+        When the game is over, print to text file if user chooses
+         */
         try {
             FileWriter w = new FileWriter("com.example.chessandroid/recordedGameLogs");
             //for(String str: moveList){

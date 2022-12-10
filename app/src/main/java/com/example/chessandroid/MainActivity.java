@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerBoardAdap
     private ArrayList<String> inputStack = new ArrayList<>();
     public String turnColor = "w";
 
+    private TextView pieceNameText;
     private TextView chesstext;
     private Button undoButton;
     private Button AIButton;
@@ -38,12 +39,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerBoardAdap
 
     Random random = new Random();
     private boolean undo = false;
-
-    /*
-    TO DO:
-        CHECK FOR ILLEGAL MOVES WORKING ON ANDROID BOARD (IN-CHECK)
-     */
-
+    private boolean gameOver = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +56,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerBoardAdap
         undoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //if(!undo){
+                if(!undo && !gameOver){
                     chessGame.undoMove();
                     piece_Order.clear();
                     transferBoards();
@@ -72,7 +68,9 @@ public class MainActivity extends AppCompatActivity implements RecyclerBoardAdap
                         chesstext.setText("Black's Move");
                     }
                     undo = true;
-                //}
+                    pieceNameText = findViewById(R.id.pieceNameText);
+                    pieceNameText.setText("");
+                }
             }
         });
 
@@ -80,9 +78,12 @@ public class MainActivity extends AppCompatActivity implements RecyclerBoardAdap
         AIButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AIMove();
-                undo = false;
-                chessGame.checkEndgame(); // Check for checkmate
+                if(!gameOver){
+                    AIMove();
+                    undo = false;
+                    chessGame.checkEndgame(); // Checks for winner and prints board
+                }
+
             }
         });
 
@@ -90,10 +91,15 @@ public class MainActivity extends AppCompatActivity implements RecyclerBoardAdap
         drawButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                chessGame.playChess("draw?");
-                chesstext = findViewById(R.id.chessText);
-                chesstext.setText("Draw");
-                chessGame.checkEndgame();
+                if(!gameOver){
+                    chessGame.playChess("draw?");
+                    chesstext = findViewById(R.id.chessText);
+                    chesstext.setText("Draw");
+                    chessGame.checkEndgame();
+                    gameOver = true;
+                    pieceNameText = findViewById(R.id.pieceNameText);
+                    pieceNameText.setText("");
+                }
             }
         });
 
@@ -101,15 +107,20 @@ public class MainActivity extends AppCompatActivity implements RecyclerBoardAdap
         resignButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                chessGame.playChess("resign");
-                chesstext = findViewById(R.id.chessText);
-                turnColor = chessGame.getOtherColor();
-                if(turnColor.equals("b")){
-                    chesstext.setText("White Resigns, Black Wins");
-                }else{
-                    chesstext.setText("Black Resigns, White Wins");
+                if(!gameOver){
+                    chessGame.playChess("resign");
+                    chesstext = findViewById(R.id.chessText);
+                    turnColor = chessGame.getOtherColor();
+                    if(turnColor.equals("b")){
+                        chesstext.setText("White Resigns, Black Wins");
+                    }else{
+                        chesstext.setText("Black Resigns, White Wins");
+                    }
+                    chessGame.checkEndgame();
+                    gameOver = true;
+                    pieceNameText = findViewById(R.id.pieceNameText);
+                    pieceNameText.setText("");
                 }
-                chessGame.checkEndgame();
             }
         });
 
@@ -158,6 +169,8 @@ public class MainActivity extends AppCompatActivity implements RecyclerBoardAdap
             }else{
                 chesstext.setText("Black's Move");
             }
+            pieceNameText = findViewById(R.id.pieceNameText);
+            pieceNameText.setText(randomInput);
         }
     }
 
@@ -268,27 +281,33 @@ public class MainActivity extends AppCompatActivity implements RecyclerBoardAdap
 
     @Override
     public void onBoardClick(int position) {
-        if(inputStack.isEmpty()){ // first click
-            initial_input = getCoordinate(findRow(position),findCol(position));
-            inputStack.add(initial_input);
-        }else{ // second click
-            initial_input = getCoordinate(findRow(position),findCol(position));
-            final_input = inputStack.get(0)+" "+initial_input;
-            inputStack.clear();
-            //System.out.println("INPUT FROM THE USER: "+final_input);
-            chessGame.playChess(final_input);
-            piece_Order.clear();
-            transferBoards();
-            adapter.notifyDataSetChanged();
-            chesstext = findViewById(R.id.chessText);
-            turnColor = chessGame.getOtherColor();
-            if(turnColor.equals("b")){
-                chesstext.setText("White's Move");
-            }else{
-                chesstext.setText("Black's Move");
+        if(!gameOver){
+            pieceNameText = findViewById(R.id.pieceNameText);
+            if(inputStack.isEmpty()){ // first click
+                initial_input = getCoordinate(findRow(position),findCol(position));
+                inputStack.add(initial_input);
+                pieceNameText.setText(initial_input);
+            }else{ // second click
+                initial_input = getCoordinate(findRow(position),findCol(position));
+                final_input = inputStack.get(0)+" "+initial_input;
+                inputStack.clear();
+                pieceNameText.setText(final_input.substring(3,5));
+                chessGame.playChess(final_input);
+                piece_Order.clear();
+                transferBoards();
+                adapter.notifyDataSetChanged();
+                chesstext = findViewById(R.id.chessText);
+                turnColor = chessGame.getOtherColor();
+                if(turnColor.equals("b")){
+                    chesstext.setText("White's Move");
+                }else{
+                    chesstext.setText("Black's Move");
+                }
+                chessGame.checkEndgame();
+                undo = false;
             }
-            chessGame.checkEndgame();
         }
+
     }
 
 }

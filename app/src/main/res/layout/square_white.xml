@@ -9,6 +9,6 @@
         android:id="@+id/square_background_white"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:background="@color/white"/>
+        />
 
 </FrameLayout> 

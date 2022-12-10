@@ -19,6 +19,8 @@ public class WatchGames extends AppCompatActivity {
     private ChessGame chessGame = new ChessGame();
     private ArrayList<Piece> pieces;
 
+    private final String[] gridColor = new String[65];
+
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,8 +31,8 @@ public class WatchGames extends AppCompatActivity {
         pieces = new ArrayList<>();
         chessGame.board.createBoard();
         transferBoards();
-
-        BoardAdapter boardAdapter = new BoardAdapter(WatchGames.this, pieces);
+        colorBoard();
+        BoardAdapter boardAdapter = new BoardAdapter(WatchGames.this, pieces, gridColor);
         gridView.setAdapter(boardAdapter);
 
         backButton = findViewById(R.id.backButton);
@@ -49,7 +51,6 @@ public class WatchGames extends AppCompatActivity {
             }
         });
     }
-
 
     private void goBack() {
         Intent intent = new Intent(this, RecordedGames.class);
@@ -100,5 +101,79 @@ public class WatchGames extends AppCompatActivity {
                 k++;
             }
         }
+    }
+
+    private void colorBoard(){
+        gridColor[0] = "#FFFFFF";
+        gridColor[1] = "#ADD8E6";
+        gridColor[2] = "#FFFFFF";
+        gridColor[3] = "#ADD8E6";
+        gridColor[4] = "#FFFFFF";
+        gridColor[5] = "#ADD8E6";
+        gridColor[6] = "#FFFFFF";
+        gridColor[7] = "#ADD8E6";
+
+        gridColor[8] = "#ADD8E6";
+        gridColor[9] = "#FFFFFF";
+        gridColor[10] = "#ADD8E6";
+        gridColor[11] = "#FFFFFF";
+        gridColor[12] = "#ADD8E6";
+        gridColor[13] = "#FFFFFF";
+        gridColor[14] = "#ADD8E6";
+        gridColor[15] = "#FFFFFF";
+
+        gridColor[16] = "#FFFFFF";
+        gridColor[17] = "#ADD8E6";
+        gridColor[18] = "#FFFFFF";
+        gridColor[19] = "#ADD8E6";
+        gridColor[20] = "#FFFFFF";
+        gridColor[21] = "#ADD8E6";
+        gridColor[22] = "#FFFFFF";
+        gridColor[23] = "#ADD8E6";
+
+        gridColor[24] = "#ADD8E6";
+        gridColor[25] = "#FFFFFF";
+        gridColor[26] = "#ADD8E6";
+        gridColor[27] = "#FFFFFF";
+        gridColor[28] = "#ADD8E6";
+        gridColor[29] = "#FFFFFF";
+        gridColor[30] = "#ADD8E6";
+        gridColor[31] = "#FFFFFF";
+
+        gridColor[32] = "#FFFFFF";
+        gridColor[33] = "#ADD8E6";
+        gridColor[34] = "#FFFFFF";
+        gridColor[35] = "#ADD8E6";
+        gridColor[36] = "#FFFFFF";
+        gridColor[37] = "#ADD8E6";
+        gridColor[38] = "#FFFFFF";
+        gridColor[39] = "#ADD8E6";
+
+        gridColor[40] = "#ADD8E6";
+        gridColor[41] = "#FFFFFF";
+        gridColor[42] = "#ADD8E6";
+        gridColor[43] = "#FFFFFF";
+        gridColor[44] = "#ADD8E6";
+        gridColor[45] = "#FFFFFF";
+        gridColor[46] = "#ADD8E6";
+        gridColor[47] = "#FFFFFF";
+
+        gridColor[48] = "#FFFFFF";
+        gridColor[49] = "#ADD8E6";
+        gridColor[50] = "#FFFFFF";
+        gridColor[51] = "#ADD8E6";
+        gridColor[52] = "#FFFFFF";
+        gridColor[53] = "#ADD8E6";
+        gridColor[54] = "#FFFFFF";
+        gridColor[55] = "#ADD8E6";
+
+        gridColor[56] = "#ADD8E6";
+        gridColor[57] = "#FFFFFF";
+        gridColor[58] = "#ADD8E6";
+        gridColor[59] = "#FFFFFF";
+        gridColor[60] = "#ADD8E6";
+        gridColor[61] = "#FFFFFF";
+        gridColor[62] = "#ADD8E6";
+        gridColor[63] = "#FFFFFF";
     }
 }

@@ -10,12 +10,11 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerboard"
-            android:layout_width="409dp"
-            android:layout_height="408dp">
-
-        </androidx.recyclerview.widget.RecyclerView>
+        <GridView
+            android:id="@+id/chessGridView"
+            android:layout_width="match_parent"
+            android:layout_height="404dp"
+            android:numColumns="8"/>
 
         <TextView
             android:id="@+id/pieceNameText"

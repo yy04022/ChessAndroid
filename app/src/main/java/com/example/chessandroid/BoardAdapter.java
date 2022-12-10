@@ -1,6 +1,7 @@
 package com.example.chessandroid;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,14 +12,15 @@ import java.util.ArrayList;
 
 public class BoardAdapter extends BaseAdapter {
     Context context;
-    //int[] piece;
     ArrayList<Piece> piece;
+    private final String[] gridColor;
 
     LayoutInflater inflater;
 
-    public BoardAdapter(Context context, ArrayList<Piece> piece) {
+    public BoardAdapter(Context context, ArrayList<Piece> piece, String[] gridColor) {
         this.context = context;
         this.piece = piece;
+        this.gridColor = gridColor;
     }
 
     @Override
@@ -43,6 +45,7 @@ public class BoardAdapter extends BaseAdapter {
         }
         if(convertView==null){
             convertView = inflater.inflate(R.layout.square_white,null);
+            convertView.setBackgroundColor(Color.parseColor(gridColor[position]));
         }
 
         ImageView imageView = convertView.findViewById(R.id.square_background_white);

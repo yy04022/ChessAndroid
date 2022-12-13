@@ -1,13 +1,21 @@
 package com.example.chessandroid;
 
-public class RecordedGameModel {
-    String gameTitle;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-    public RecordedGameModel(String gameTitle) {
+public class RecordedGameModel implements Serializable {
+    String gameTitle;
+    String date;
+    ArrayList<String> moveList;
+
+    public RecordedGameModel(String gameTitle, String date, ArrayList<String> moveList) {
         this.gameTitle = gameTitle;
+        this.date = date;
+        this.moveList = moveList;
     }
 
-    public String getGameTitle() {
-        return gameTitle;
+    public String getDateAndTitle() {
+        return date + gameTitle;
     }
 }

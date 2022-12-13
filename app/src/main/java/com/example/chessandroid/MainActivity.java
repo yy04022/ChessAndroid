@@ -1,18 +1,26 @@
 package com.example.chessandroid;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity{
@@ -31,18 +39,21 @@ public class MainActivity extends AppCompatActivity{
     private Button drawButton;
     private Button resignButton;
     private Button recordedGamesButton;
+    private Button restartButton;
 
-    private ArrayList<Piece> piece_Order;
+    private ArrayList<Piece> pieceOrder;
     private RecyclerView recyclerView;
 
-    RecyclerBoardAdapter adapter;
+    BoardAdapter adapter;
     RecyclerView.LayoutManager mLayoutManager;
 
-    Random random = new Random();
+
     private boolean undo = false;
     private boolean gameOver = false;
 
     String[] gridColor = new String[65];
+
+    ArrayList<RecordedGameModel> records = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,19 +62,18 @@ public class MainActivity extends AppCompatActivity{
 
         //recyclerView = findViewById(R.id.recyclerboard);
         @SuppressLint({"MissingInflatedId", "LocalSuppress"}) GridView gridView = findViewById(R.id.chessGridView);
-        piece_Order = new ArrayList<>();
+        pieceOrder = new ArrayList<>();
         chessGame.board.createBoard();
         transferBoards();
         //setAdapter();
         colorBoard();
-        BoardAdapter adapter = new BoardAdapter(MainActivity.this, piece_Order, gridColor);
+        adapter = new BoardAdapter(MainActivity.this, pieceOrder, gridColor);
         gridView.setAdapter(adapter);
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(!gameOver){
-                    pieceNameText = findViewById(R.id.pieceNameText);
                     if(inputStack.isEmpty()){ // first click
                         initial_input = getCoordinate(findRow(position),findCol(position));
                         inputStack.add(initial_input);
@@ -72,9 +82,9 @@ public class MainActivity extends AppCompatActivity{
                         initial_input = getCoordinate(findRow(position),findCol(position));
                         final_input = inputStack.get(0)+" "+initial_input;
                         inputStack.clear();
-                        pieceNameText.setText(final_input.substring(3,5));
+                        pieceNameText.setText(final_input);
                         chessGame.playChess(final_input);
-                        piece_Order.clear();
+                        pieceOrder.clear();
                         transferBoards();
                         adapter.notifyDataSetChanged();
                         chesstext = findViewById(R.id.chessText);
@@ -91,13 +101,15 @@ public class MainActivity extends AppCompatActivity{
             }
         });
 
+        pieceNameText = findViewById(R.id.pieceNameText);
+        chesstext = findViewById(R.id.chessText);
         undoButton = (Button) findViewById(R.id.undoButton);
         undoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(!undo && !gameOver){
                     chessGame.undoMove();
-                    piece_Order.clear();
+                    pieceOrder.clear();
                     transferBoards();
                     adapter.notifyDataSetChanged();
                     turnColor = chessGame.getOtherColor();
@@ -107,7 +119,6 @@ public class MainActivity extends AppCompatActivity{
                         chesstext.setText("Black's Move");
                     }
                     undo = true;
-                    pieceNameText = findViewById(R.id.pieceNameText);
                     pieceNameText.setText("");
                 }
             }
@@ -117,12 +128,9 @@ public class MainActivity extends AppCompatActivity{
         AIButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!gameOver){
-                    AIMove();
-                    undo = false;
-                    chessGame.checkEndgame(); // Checks for winner and prints board
-                }
-
+                    aiMove();
+//                for (int i = 0; i < 20; i++) {
+//                }
             }
         });
 
@@ -136,7 +144,6 @@ public class MainActivity extends AppCompatActivity{
                     chesstext.setText("Draw");
                     chessGame.checkEndgame();
                     gameOver = true;
-                    pieceNameText = findViewById(R.id.pieceNameText);
                     pieceNameText.setText("");
                 }
             }
@@ -157,8 +164,8 @@ public class MainActivity extends AppCompatActivity{
                     }
                     chessGame.checkEndgame();
                     gameOver = true;
-                    pieceNameText = findViewById(R.id.pieceNameText);
                     pieceNameText.setText("");
+                    showStorageDialog();
                 }
             }
         });
@@ -170,10 +177,54 @@ public class MainActivity extends AppCompatActivity{
                 openRecordedGames();
             }
         });
+
+        restartButton = findViewById(R.id.restartButton);
+        restartButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                pieceOrder.clear();
+                inputStack.clear();
+                chessGame = new ChessGame();
+                chessGame.board.createBoard();
+                transferBoards();
+                gameOver = false;
+                colorBoard();
+                adapter.notifyDataSetChanged();
+                pieceNameText.setText("");
+                chesstext.setText("White's Move");
+            }
+        });
+    }
+
+    private void showStorageDialog() {
+        final EditText inputServer = new EditText(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Game name").setView(inputServer)
+                .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                String t = inputServer.getText().toString();
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");// HH:mm:ss
+                Date date = new Date(System.currentTimeMillis());
+                String cur = simpleDateFormat.format(date);
+                RecordedGameModel model = new RecordedGameModel(t, cur, chessGame.moveList);
+                records.add(model);
+                records.sort(Comparator.comparing(RecordedGameModel::getDateAndTitle));
+                Toast.makeText(getApplicationContext(), "saved",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+        builder.show();
     }
 
     private void openRecordedGames() {
         Intent intent = new Intent(this, RecordedGames.class);
+        intent.putExtra("records", records);
         startActivity(intent);
     }
 
@@ -186,18 +237,24 @@ public class MainActivity extends AppCompatActivity{
         //recyclerView.setAdapter(adapter);
     }
 
-    public void AIMove(){
-        System.out.println("AIMove");
-        String randomInput;
-        int r1, r2;
-        r1 = random.nextInt(65);
-        r2 = random.nextInt(65);
-        randomInput = getCoordinate(findRow(r1),findCol(r1))+" "+getCoordinate(findRow(r2),findCol(r2));
-        chessGame.playChess(randomInput);
-        if (!chessGame.isValidMove()){
-            AIMove();
-        }else{
-            piece_Order.clear();
+    public void aiMove(){
+        if (!gameOver) {
+            String randomInput;
+            Random random = new Random();
+            int r1, r2;
+            r1 = random.nextInt(64);
+            r2 = random.nextInt(64);
+            randomInput = getCoordinate(findRow(r1),findCol(r1))+" "+getCoordinate(findRow(r2),findCol(r2));
+            chessGame.playChess(randomInput);
+
+            while (!chessGame.isValidMove()) {
+                r1 = random.nextInt(64);
+                r2 = random.nextInt(64);
+                randomInput = getCoordinate(findRow(r1),findCol(r1))+" "+getCoordinate(findRow(r2),findCol(r2));
+                chessGame.playChess(randomInput);
+            }
+
+            pieceOrder.clear();
             transferBoards();
             adapter.notifyDataSetChanged();
             chesstext = findViewById(R.id.chessText);
@@ -207,8 +264,9 @@ public class MainActivity extends AppCompatActivity{
             }else{
                 chesstext.setText("Black's Move");
             }
-            pieceNameText = findViewById(R.id.pieceNameText);
             pieceNameText.setText(randomInput);
+            undo = false;
+            chessGame.checkEndgame();
         }
     }
 
@@ -286,31 +344,31 @@ public class MainActivity extends AppCompatActivity{
             for (int j = 0; j < 8; j++) {
                 String val = gameBoard.getPiece(i, j);
                 if (val.equals("wp")) {
-                    piece_Order.add(new Piece(R.drawable.white_pawn));
+                    pieceOrder.add(new Piece(R.drawable.white_pawn));
                 } else if (val.equals("wR")) {
-                    piece_Order.add(new Piece(R.drawable.white_rook));
+                    pieceOrder.add(new Piece(R.drawable.white_rook));
                 } else if (val.equals("wN")) {
-                    piece_Order.add(new Piece(R.drawable.white_knight));
+                    pieceOrder.add(new Piece(R.drawable.white_knight));
                 } else if (val.equals("wB")) {
-                    piece_Order.add(new Piece(R.drawable.white_bishop));
+                    pieceOrder.add(new Piece(R.drawable.white_bishop));
                 } else if (val.equals("wQ")) {
-                    piece_Order.add(new Piece(R.drawable.white_queen));
+                    pieceOrder.add(new Piece(R.drawable.white_queen));
                 } else if (val.equals("wK")) {
-                    piece_Order.add(new Piece(R.drawable.white_king));
+                    pieceOrder.add(new Piece(R.drawable.white_king));
                 } else if (val.equals("bp")) {
-                    piece_Order.add(new Piece(R.drawable.black_pawn));
+                    pieceOrder.add(new Piece(R.drawable.black_pawn));
                 } else if (val.equals("bR")) {
-                    piece_Order.add(new Piece(R.drawable.black_rook));
+                    pieceOrder.add(new Piece(R.drawable.black_rook));
                 } else if (val.equals("bN")) {
-                    piece_Order.add(new Piece(R.drawable.black_knight));
+                    pieceOrder.add(new Piece(R.drawable.black_knight));
                 } else if (val.equals("bB")) {
-                    piece_Order.add(new Piece(R.drawable.black_bishop));
+                    pieceOrder.add(new Piece(R.drawable.black_bishop));
                 } else if (val.equals("bQ")) {
-                    piece_Order.add(new Piece(R.drawable.black_queen));
+                    pieceOrder.add(new Piece(R.drawable.black_queen));
                 } else if (val.equals("bK")) {
-                    piece_Order.add(new Piece(R.drawable.black_king));
+                    pieceOrder.add(new Piece(R.drawable.black_king));
                 } else {
-                    piece_Order.add(new Piece(R.drawable.blank_square));
+                    pieceOrder.add(new Piece(R.drawable.blank_square));
                 }
                 k++;
             }

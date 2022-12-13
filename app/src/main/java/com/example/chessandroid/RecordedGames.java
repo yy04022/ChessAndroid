@@ -15,9 +15,10 @@ import java.util.ArrayList;
 
 public class RecordedGames extends AppCompatActivity implements RecordedGamesInterface{
 
-    ArrayList<RecordedGameModel> gameModels = new ArrayList<>();
+    ArrayList<RecordedGameModel> gameModels;
     private Button backButton;
     private Switch title_or_date;
+    RecyclerView recyclerView;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -25,9 +26,10 @@ public class RecordedGames extends AppCompatActivity implements RecordedGamesInt
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recorded_games);
 
-        RecyclerView recyclerView = findViewById(R.id.gameList);
+        recyclerView = findViewById(R.id.gameList);
 
-        createGameList();
+        Intent intent = getIntent();
+        gameModels = (ArrayList<RecordedGameModel>) intent.getSerializableExtra("records");
 
         RecordedGamesAdapter adapter = new RecordedGamesAdapter(this, gameModels, this);
         recyclerView.setAdapter(adapter);
@@ -51,30 +53,22 @@ public class RecordedGames extends AppCompatActivity implements RecordedGamesInt
                  */
             }
         });
+
+
     }
 
-    private void watchGame() {
+    private void goWatchGame(int pos) {
         Intent intent = new Intent(this, WatchGames.class);
+        intent.putExtra("record", gameModels.get(pos));
         startActivity(intent);
     }
 
     private void goBack() {
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-    }
-
-    private void createGameList(){
-        /*
-        Read from file that contains all of the games titles
-         */
-        String[] example_games = {"game1", "game2", "game3"};
-        for(int i = 0; i<3; i++){
-            gameModels.add(new RecordedGameModel(example_games[i]));
-        }
+        this.finish();
     }
 
     @Override
     public void onGameClick(int position) {
-        watchGame();
+        goWatchGame(position);
     }
 }

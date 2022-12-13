@@ -34,7 +34,8 @@ public class RecordedGamesAdapter extends RecyclerView.Adapter<RecordedGamesAdap
 
     @Override
     public void onBindViewHolder(@NonNull RecordedGamesAdapter.MyViewHolder2 holder, int position) {
-        holder.gameTitle.setText(recordedGameModels.get(position).getGameTitle());
+        holder.gameTitle.setText(recordedGameModels.get(position).gameTitle);
+        holder.gameDate.setText(recordedGameModels.get(position).date);
     }
 
     @Override
@@ -45,10 +46,12 @@ public class RecordedGamesAdapter extends RecyclerView.Adapter<RecordedGamesAdap
     public static class MyViewHolder2 extends RecyclerView.ViewHolder{
 
         TextView gameTitle;
+        TextView gameDate;
 
         public MyViewHolder2(@NonNull View itemView, RecordedGamesInterface recordedGamesInterface) {
             super(itemView);
             gameTitle = itemView.findViewById(R.id.gameTitle);
+            gameDate = itemView.findViewById(R.id.gameDate);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

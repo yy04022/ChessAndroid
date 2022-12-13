@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,9 +18,16 @@ public class WatchGames extends AppCompatActivity {
     private Button nextButton;
 
     private ChessGame chessGame = new ChessGame();
-    private ArrayList<Piece> pieces;
+    private ArrayList<Piece> pieceOrder;
 
-    private final String[] gridColor = new String[65];
+    private String[] gridColor = new String[65];
+
+    private RecordedGameModel record;
+    private int moveIndex = 0;
+    TextView progressText;
+    GridView gridView;
+
+    BoardAdapter boardAdapter;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -27,12 +35,12 @@ public class WatchGames extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_watch_games);
 
-        GridView gridView = findViewById(R.id.gridView);
-        pieces = new ArrayList<>();
+        gridView = findViewById(R.id.gridView);
+        pieceOrder = new ArrayList<>();
         chessGame.board.createBoard();
         transferBoards();
         colorBoard();
-        BoardAdapter boardAdapter = new BoardAdapter(WatchGames.this, pieces, gridColor);
+        boardAdapter = new BoardAdapter(WatchGames.this, pieceOrder, gridColor);
         gridView.setAdapter(boardAdapter);
 
         backButton = findViewById(R.id.backButton);
@@ -50,19 +58,36 @@ public class WatchGames extends AppCompatActivity {
                 nextMove();
             }
         });
+
+        progressText = findViewById(R.id.progressText);
+
+
+        Intent intent = getIntent();
+        record = intent.getSerializableExtra("record", RecordedGameModel.class);
+        progressText.setText(record.gameTitle);
     }
 
     private void goBack() {
-        Intent intent = new Intent(this, RecordedGames.class);
-        startActivity(intent);
+        this.finish();
     }
 
     private void nextMove(){
-        /*
-        Read from text file and give call playChess with the written input
-         */
-        String example_input = " ";
-        chessGame.playChess(example_input);
+        pieceOrder.clear();
+        if (moveIndex < record.moveList.toArray().length ) {
+            String inp = record.moveList.get(moveIndex);
+            chessGame.playChess(inp);
+
+            transferBoards();
+            boardAdapter.notifyDataSetChanged();
+            String turnColor = chessGame.turnColor;
+            if(turnColor.equals("b")){
+                progressText.setText("White's Move: " + inp);
+            }else{
+                progressText.setText("Black's Move: " + inp);
+            }
+
+            moveIndex++;
+        }
     }
 
     public void transferBoards() {
@@ -72,31 +97,31 @@ public class WatchGames extends AppCompatActivity {
             for (int j = 0; j < 8; j++) {
                 String val = gameBoard.getPiece(i, j);
                 if (val.equals("wp")) {
-                    pieces.add(new Piece(R.drawable.white_pawn));
+                    pieceOrder.add(new Piece(R.drawable.white_pawn));
                 } else if (val.equals("wR")) {
-                    pieces.add(new Piece(R.drawable.white_rook));
+                    pieceOrder.add(new Piece(R.drawable.white_rook));
                 } else if (val.equals("wN")) {
-                    pieces.add(new Piece(R.drawable.white_knight));
+                    pieceOrder.add(new Piece(R.drawable.white_knight));
                 } else if (val.equals("wB")) {
-                    pieces.add(new Piece(R.drawable.white_bishop));
+                    pieceOrder.add(new Piece(R.drawable.white_bishop));
                 } else if (val.equals("wQ")) {
-                    pieces.add(new Piece(R.drawable.white_queen));
+                    pieceOrder.add(new Piece(R.drawable.white_queen));
                 } else if (val.equals("wK")) {
-                    pieces.add(new Piece(R.drawable.white_king));
+                    pieceOrder.add(new Piece(R.drawable.white_king));
                 } else if (val.equals("bp")) {
-                    pieces.add(new Piece(R.drawable.black_pawn));
+                    pieceOrder.add(new Piece(R.drawable.black_pawn));
                 } else if (val.equals("bR")) {
-                    pieces.add(new Piece(R.drawable.black_rook));
+                    pieceOrder.add(new Piece(R.drawable.black_rook));
                 } else if (val.equals("bN")) {
-                    pieces.add(new Piece(R.drawable.black_knight));
+                    pieceOrder.add(new Piece(R.drawable.black_knight));
                 } else if (val.equals("bB")) {
-                    pieces.add(new Piece(R.drawable.black_bishop));
+                    pieceOrder.add(new Piece(R.drawable.black_bishop));
                 } else if (val.equals("bQ")) {
-                    pieces.add(new Piece(R.drawable.black_queen));
+                    pieceOrder.add(new Piece(R.drawable.black_queen));
                 } else if (val.equals("bK")) {
-                    pieces.add(new Piece(R.drawable.black_king));
+                    pieceOrder.add(new Piece(R.drawable.black_king));
                 } else {
-                    pieces.add(new Piece(R.drawable.blank_square));
+                    pieceOrder.add(new Piece(R.drawable.blank_square));
                 }
                 k++;
             }

@@ -90,6 +90,9 @@ public class ChessGame {
                 board.setPiece(undoBoard.getPiece(i, j), i, j);
             }
         }
+        if (!moveList.isEmpty()) {
+            moveList.remove(moveList.toArray().length-1);
+        }
         // FIX THIS !!!
         if (turnColor.equals("w")){
             turnColor = "b";
@@ -138,6 +141,10 @@ public class ChessGame {
         String promotionPiece = "x";
         input = androidInput;
         //System.out.println("CHESS INPUT: "+input);
+
+        promotion = false;
+        validMove = false;
+
         if(input.equals("draw?")){ // New
             draw2 = true;
         }

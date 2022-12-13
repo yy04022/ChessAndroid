@@ -145,6 +145,7 @@ public class MainActivity extends AppCompatActivity{
                     chessGame.checkEndgame();
                     gameOver = true;
                     pieceNameText.setText("");
+                    showStorageDialog();
                 }
             }
         });
